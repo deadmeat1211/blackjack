@@ -1,0 +1,139 @@
+import random
+import time
+
+suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+ranks = {
+    '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11
+}
+
+deck = [(rank, suit) for rank in ranks for suit in suits]
+
+def shuffle_deck():
+    random.shuffle(deck)
+
+def deal_card():
+    return deck.pop()
+
+def calculate_score(hand):
+    score = sum(ranks[card[0]] for card in hand)
+    aces = [card for card in hand if card[0] == 'A']
+    while score > 21 and aces:
+        score -= 10
+        aces.pop()
+    return score
+
+def display_hand(name, hand, hide_first=False):
+    if hide_first:
+        print("{}'s hand: [Hidden], {} of {}".format(name, hand[1][0], hand[1][1]))
+    else:
+        hand_str = ', '.join("{} of {}".format(rank, suit) for rank, suit in hand)
+        print("{}'s hand: {} (Total: {})".format(name, hand_str, calculate_score(hand)))
+
+def blackjack():
+    balance = 1000
+    print("=== Blackjack ===")
+
+    while balance > 0:
+        print(f"\nYour current balance: ${balance}")
+
+        bet = 0
+        while bet <= 0 or bet > balance:
+            bet = int(input(f"How much would you like to bet? (Current balance: £{balance}): "))
+
+        shuffle_deck()
+
+        player_hand = [deal_card(), deal_card()]
+        dealer_hand = [deal_card(), deal_card()]
+
+        display_hand("Dealer", dealer_hand, hide_first=True)
+        display_hand("Player", player_hand)
+
+        while calculate_score(player_hand) < 21:
+            move = input("Hit or Stand? ").strip().lower()
+            if move == 'hit':
+                player_hand.append(deal_card())
+                display_hand("Player", player_hand)
+                if calculate_score(player_hand) > 21:
+                    print("Bust! You lose :(")
+                    balance -= bet
+                    break
+            elif move == 'stand':
+                break
+            else:
+                print("Please type 'hit' or 'stand'.")
+
+
+
+        if calculate_score(player_hand) > 21:
+            print(f"Your final balance: £{balance}")
+            if balance <= 0:
+                print("YOU ARE NOW BROKE. YOU GAMBLED ALL YOUR MONEY AWAY.")
+                return
+            continue
+
+
+
+        time.sleep(3)
+
+        print("\nDealer's turn:")
+        display_hand("Dealer", dealer_hand)
+        while calculate_score(dealer_hand) < 17:
+            dealer_hand.append(deal_card())
+            display_hand("Dealer", dealer_hand)
+            time.sleep(3)
+
+        player_score = calculate_score(player_hand)
+        dealer_score = calculate_score(dealer_hand)
+
+        print("\n=== Final Result ===")
+        print(f"Player: {player_score} / Dealer: {dealer_score}")
+
+        # outcome
+        if dealer_score > 21:
+            print("Dealer busts! You win!")
+            print(f"+£{bet}")
+            balance += bet
+        elif player_score > dealer_score:
+            print("You win!")
+            print(f"+£{bet}")
+            balance += bet
+        elif player_score == dealer_score:
+            print("It's a tie!")
+        else:
+            print("Dealer wins!")
+            print(f"-£{bet}")
+            balance -= bet
+
+        print(f"Your current balance: £{balance}")
+        
+        # play again???
+        time.sleep(5)
+        play_again = input("Do you want to play again? (yes/no): ").strip().lower()
+        
+        if play_again == 'no':
+            print("Did you know 90% of gamblers quit just before they hit it big?")
+        
+            time.sleep(2)
+            sure = input ("Are you sure? (yes/no)").strip().lower()
+
+            if sure == 'yes':
+                print("Just remember. 90% of gamblers quit just before they hit big. You could have been rich.")
+                return
+            
+            elif sure == 'no':
+                print("Great:) good luck. Dont quit.")
+            
+            else:
+                print("invalid input:( bye.")
+                return
+
+        
+        elif play_again == 'yes':
+            print("Alright, great:) good luck.")
+
+        else:
+            print("Just remember. 90% of gamblers quit just before they hit big.")
+            return
+
+
+blackjack()
